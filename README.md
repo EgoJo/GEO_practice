@@ -47,12 +47,13 @@ npm install
 npx playwright install chromium
 ```
 
-### 2. 配置环境变量
+### 2. 配置环境变量（可选，支持交互写入）
 
 ```bash
-cp .env.example .env
-# 至少填写 TAVILY_API_KEY（用于 ai-search-audit）
+cp .env.example .env    # 若文件已存在可跳过
 ```
+
+> 提示：如果你没先手动填 `TAVILY_API_KEY`，在运行第 3 步时，程序会在终端里提示你输入 Tavily 的 API Key，并自动写入 `.env`，以后就不用再配了。
 
 ### 3. 一句命令，交互式优化网站
 

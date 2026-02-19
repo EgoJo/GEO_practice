@@ -6,6 +6,8 @@
  */
 
 import * as readline from "readline";
+import * as fs from "fs";
+import * as path from "path";
 import { runAISearchAudit } from "./tools/ai-search-audit.js";
 import { runContentReader } from "./tools/content-reader.js";
 import { runSchemaGenerator } from "./tools/schema-generator.js";
@@ -29,16 +31,48 @@ function print(title: string, body: string, maxLen = 1200) {
   console.log("─".repeat(50) + "\n");
 }
 
+function ensureEnvVar(key: string, value: string): void {
+  const envPath = path.join(process.cwd(), ".env");
+  let content = "";
+  if (fs.existsSync(envPath)) {
+    content = fs.readFileSync(envPath, "utf8");
+  }
+  const line = `${key}=${value}\n`;
+  if (content.includes(`${key}=`)) {
+    content = content.replace(new RegExp(`^${key}=.*$`, "m"), line.trim());
+  } else {
+    if (content && !content.endsWith("\n")) content += "\n";
+    content += line;
+  }
+  fs.writeFileSync(envPath, content, "utf8");
+  process.env[key] = value;
+}
+
+async function ensureTavilyKey(): Promise<boolean> {
+  if (env.TAVILY_API_KEY) return true;
+  const ans = await ask("  检测到未配置 TAVILY_API_KEY，是否现在输入并写入 .env？(y/n，默认 n)：");
+  if (ans.toLowerCase() !== "y" && ans !== "Y") {
+    console.log("  已选择跳过配置 TAVILY_API_KEY，将跳过审计步骤。\n");
+    return false;
+  }
+  const key = await ask("  请输入 Tavily API Key（形如 tvly-xxxx）：");
+  if (!key) {
+    console.log("  未输入 Key，跳过审计。\n");
+    return false;
+  }
+  ensureEnvVar("TAVILY_API_KEY", key);
+  console.log("  已写入 .env，并在本次会话中生效。\n");
+  return true;
+}
+
 async function stepAudit(): Promise<void> {
   const keyword = await ask("1️⃣  请输入要优化的目标关键词（如：如何学习 TypeScript）：");
   if (!keyword) {
     console.log("  未输入，跳过审计。\n");
     return;
   }
-  if (!env.TAVILY_API_KEY) {
-    console.log("  未配置 TAVILY_API_KEY，请先在 .env 中填写后重试。跳过审计。\n");
-    return;
-  }
+  const hasKey = await ensureTavilyKey();
+  if (!hasKey) return;
   console.log("  正在审计 AI 搜索现状，请稍候...");
   try {
     const res = await runAISearchAudit({ query: keyword, maxResults: 6, searchDepth: "advanced" });

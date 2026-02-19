@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 /**
  * 环境变量与配置
  */
