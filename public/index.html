@@ -136,7 +136,7 @@
       }
       .after-frame {
         width: 100%;
-        height: 360px;
+        height: 260px;
         border: 1px solid #e5e7eb;
         border-radius: 0.75rem;
         background: #f9fafb;
@@ -193,6 +193,20 @@
             <code>&lt;script type="application/ld+json"&gt;</code> 中。
           </div>
           <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
+
+          <div id="beforeCard" class="after-card" style="display: none">
+            <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
+              原页面预览
+            </h3>
+            <div class="status small" id="beforeStatus"></div>
+            <iframe
+              id="beforeFrame"
+              class="after-frame"
+              src="about:blank"
+              loading="lazy"
+            ></iframe>
+          </div>
+
           <div id="afterCard" class="after-card" style="display: none">
             <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
               GEO 优化后示例页面（预览）
@@ -220,6 +234,9 @@
       const pageStatus = $("pageStatus");
       const pageInfo = $("pageInfo");
       const schemaPre = $("schemaJson");
+      const beforeCard = $("beforeCard");
+      const beforeFrame = $("beforeFrame");
+      const beforeStatus = $("beforeStatus");
       const afterCard = $("afterCard");
       const afterFrame = $("afterFrame");
       const afterStatus = $("afterStatus");
@@ -240,6 +257,9 @@
         auditList.innerHTML = "";
         pageInfo.innerHTML = "";
         schemaPre.textContent = "// 生成中...";
+        beforeCard.style.display = "none";
+        beforeFrame.src = "about:blank";
+        beforeStatus.textContent = "";
         afterCard.style.display = "none";
         afterFrame.src = "about:blank";
         afterStatus.textContent = "";
@@ -283,6 +303,11 @@
             pageStatus.textContent = "抓取失败：" + data.pageError;
             pageStatus.classList.add("error");
           } else if (data.page) {
+            if (url) {
+              beforeCard.style.display = "block";
+              beforeStatus.textContent = "这是当前输入 URL 的原始页面预览。";
+              beforeFrame.src = url;
+            }
             const p = data.page;
             const headingsHtml =
               p.headings && p.headings.length
