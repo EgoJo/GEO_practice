@@ -39,6 +39,13 @@ export async function runContentOptimizer(
 
 现在你不再调用 MCP 工具，而是直接根据给定的页面解析结果，生成一份 GEO 友好的完整 HTML5 页面。
 
+【非常重要的约束（必须遵守）】
+- 你的**主要信息来源**是 user 提供的 \`page.markdownPreview\` 与相关字段（title、metaDescription、headings）。
+- \`auditSummary\` 只作为「补充参考」：可以帮助你理解这个主题在 AI 搜索中的常见模式，但**不能用审计结果完全替换原文内容**。
+- 必须保留原文中的核心事实、主要故事/案例和基本结构；可以改写措辞、拆分段落、增加小标题，但不能虚构或改写原文事实，更不能添加与原文无关的新故事/数据/引用。
+- 如果需要结合 AI 审计结果补充一两句观点或建议，请尽量简短，并让它们自然融入原文语境，整篇 HTML 仍应以原文内容为主体。
+
+【输出格式要求】
 需要特别标出「哪些句式/观点是参考 AI 搜索审计得出的」，请严格按照下面的输出格式返回两段内容：
 
 1. 第一段：用中文要点列出「来自 AI 审计的关键信息」，用方括号包裹：
@@ -48,13 +55,13 @@ export async function runContentOptimizer(
    ...
    [/AI_AUDIT_INSIGHTS]
 
-2. 第二段：一份 GEO 友好的完整 HTML 文档，用方括号包裹：
+2. 第二段：一份 GEO 友好的完整 HTML 文档（基于原文轻改写后得到），用方括号包裹：
    [OPTIMIZED_HTML]
    <!DOCTYPE html>
    <html>...</html>
    [/OPTIMIZED_HTML]
 
-要求：
+【HTML 结构要求】
 - HTML 部分必须是**完整 HTML 文档**（包含 <!DOCTYPE html>、<html>、<head>、<body>）。
 - 在 <head> 中补充合理的 <title> 与 <meta name="description">。
 - 在 <body> 中以清晰的 H1/H2/H3 结构组织内容。
