@@ -21,6 +21,7 @@ export interface ContentOptimizerInput {
 
 export interface ContentOptimizerResult {
   optimizedHtml: string;
+  auditInsights?: string;
 }
 
 export async function runContentOptimizer(
@@ -38,8 +39,23 @@ export async function runContentOptimizer(
 
 现在你不再调用 MCP 工具，而是直接根据给定的页面解析结果，生成一份 GEO 友好的完整 HTML5 页面。
 
+需要特别标出「哪些句式/观点是参考 AI 搜索审计得出的」，请严格按照下面的输出格式返回两段内容：
+
+1. 第一段：用中文要点列出「来自 AI 审计的关键信息」，用方括号包裹：
+   [AI_AUDIT_INSIGHTS]
+   - 要点 1
+   - 要点 2
+   ...
+   [/AI_AUDIT_INSIGHTS]
+
+2. 第二段：一份 GEO 友好的完整 HTML 文档，用方括号包裹：
+   [OPTIMIZED_HTML]
+   <!DOCTYPE html>
+   <html>...</html>
+   [/OPTIMIZED_HTML]
+
 要求：
-- 输出必须是**完整 HTML 文档**（包含 <!DOCTYPE html>、<html>、<head>、<body>）。
+- HTML 部分必须是**完整 HTML 文档**（包含 <!DOCTYPE html>、<html>、<head>、<body>）。
 - 在 <head> 中补充合理的 <title> 与 <meta name="description">。
 - 在 <body> 中以清晰的 H1/H2/H3 结构组织内容。
 - 内容可以适当比原文更精炼、更有结构，但必须保持事实不虚构。
@@ -82,10 +98,27 @@ export async function runContentOptimizer(
     choices?: Array<{ message?: { content?: string } }>;
   };
 
-  const content =
+  const raw =
     data.choices?.[0]?.message?.content?.trim() ||
     "<!-- 模型未返回内容 -->";
 
-  return { optimizedHtml: content };
+  let auditInsights: string | undefined;
+  let optimizedHtml = raw;
+
+  const insightsMatch = raw.match(
+    /\[AI_AUDIT_INSIGHTS\]([\s\S]*?)\[\/AI_AUDIT_INSIGHTS\]/i
+  );
+  if (insightsMatch) {
+    auditInsights = insightsMatch[1].trim();
+  }
+
+  const htmlMatch = raw.match(
+    /\[OPTIMIZED_HTML\]([\s\S]*?)\[\/OPTIMIZED_HTML\]/i
+  );
+  if (htmlMatch) {
+    optimizedHtml = htmlMatch[1].trim();
+  }
+
+  return { optimizedHtml, auditInsights };
 }
 

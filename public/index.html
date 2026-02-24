@@ -71,16 +71,40 @@
         opacity: 0.6;
         cursor: default;
       }
-      .layout {
+      .section-row {
         display: grid;
-        grid-template-columns: 0.85fr 0.85fr 1.5fr;
-        gap: 1rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
         align-items: flex-start;
       }
       @media (max-width: 960px) {
-        .layout {
+        .section-row {
           grid-template-columns: 1fr;
         }
+      }
+      .section-title {
+        font-size: 1.1rem;
+        margin: 0 0 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e5e7eb;
+      }
+      .preview-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        align-items: stretch;
+      }
+      @media (max-width: 960px) {
+        .preview-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .preview-cell {
+        min-height: 280px;
+      }
+      .preview-cell h3 {
+        font-size: 0.95rem;
+        margin: 0 0 0.35rem;
       }
       h2 {
         font-size: 1.05rem;
@@ -94,7 +118,7 @@
       .list {
         font-size: 0.85rem;
         line-height: 1.5;
-        max-height: 420px;
+        max-height: 320px;
         overflow: auto;
         word-break: break-word;
         overflow-wrap: anywhere;
@@ -118,7 +142,7 @@
         padding: 0.75rem 0.9rem;
         border-radius: 0.75rem;
         font-size: 0.8rem;
-        max-height: 420px;
+        max-height: 320px;
         overflow: auto;
         white-space: pre-wrap;
         word-break: break-all;
@@ -131,12 +155,9 @@
       .status.error {
         color: #b91c1c;
       }
-      .after-card {
-        margin-top: 1rem;
-      }
       .after-frame {
         width: 100%;
-        height: 260px;
+        height: 360px;
         border: 1px solid #e5e7eb;
         border-radius: 0.75rem;
         background: #f9fafb;
@@ -173,60 +194,69 @@
         <div id="globalStatus" class="status"></div>
       </div>
 
-      <div class="layout">
-        <div class="card">
-          <h2>AI 搜索审计</h2>
-          <div id="auditStatus" class="status small"></div>
-          <div id="auditList" class="list"></div>
-        </div>
-
-        <div class="card">
-          <h2>你的页面结构</h2>
-          <div id="pageStatus" class="status small"></div>
-          <div id="pageInfo" class="list"></div>
-        </div>
-
-        <div class="card">
-          <h2>推荐 JSON-LD（Article）</h2>
-          <div class="status small">
-            可直接放入页面
-            <code>&lt;script type="application/ld+json"&gt;</code> 中。
+      <!-- 模块一：分析现状（AI 审计 + 原页面结构） -->
+      <div class="card">
+        <h2 class="section-title">分析现状</h2>
+        <div class="section-row">
+          <div>
+            <h3 style="font-size: 0.95rem; margin: 0 0 0.35rem">AI 搜索审计</h3>
+            <div id="auditStatus" class="status small"></div>
+            <div id="auditList" class="list"></div>
           </div>
-          <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
-
-          <h3 style="font-size: 0.95rem; margin: 0.8rem 0 0.3rem">
-            大模型生成的优化后 HTML（预览源码）
-          </h3>
-          <div class="status small">
-            若配置了 DEEPSEEK_API_KEY，这里会显示 DeepSeek 根据当前页面解析结果生成的完整 HTML
-            源码（只读预览）。
+          <div>
+            <h3 style="font-size: 0.95rem; margin: 0 0 0.35rem">原页面结构</h3>
+            <div id="pageStatus" class="status small"></div>
+            <div id="pageInfo" class="list"></div>
           </div>
-          <pre id="llmHtml">// 若已配置 DEEPSEEK_API_KEY，这里会显示优化后 HTML 源码</pre>
+        </div>
+      </div>
 
-          <div id="beforeCard" class="after-card" style="display: none">
-            <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
-              原页面预览
+      <!-- 模块二：生成结果（JSON-LD + 大模型 HTML 源码） -->
+      <div class="card">
+        <h2 class="section-title">生成结果</h2>
+        <div class="section-row">
+          <div>
+            <h3 style="font-size: 0.95rem; margin: 0 0 0.35rem">推荐 JSON-LD（Article）</h3>
+            <div class="status small">
+              可直接放入页面 <code>&lt;script type="application/ld+json"&gt;</code> 中。
+            </div>
+            <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
+          </div>
+          <div>
+            <h3 style="font-size: 0.95rem; margin: 0 0 0.35rem">
+              来自 AI 审计的关键信息
             </h3>
+            <div class="status small">
+              这里展示的是大模型根据「AI 搜索审计结果」提炼出的要点，方便你看到**哪些观点是审计启发的**。
+            </div>
+            <pre id="llmAudit">
+// 若已配置 DEEPSEEK_API_KEY，这里会显示基于 AI 审计提炼的要点
+            </pre>
+
+            <h3 style="font-size: 0.95rem; margin: 0.6rem 0 0.35rem">
+              大模型生成的优化后 HTML（源码）
+            </h3>
+            <div class="status small">
+              若配置了 DEEPSEEK_API_KEY，会显示 DeepSeek 生成的完整 HTML 源码。
+            </div>
+            <pre id="llmHtml">// 若已配置 DEEPSEEK_API_KEY，这里会显示优化后 HTML 源码</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块三：原页面 vs 优化后页面 预览对比 -->
+      <div id="previewSection" class="card" style="display: none">
+        <h2 class="section-title">页面预览对比</h2>
+        <div class="preview-row">
+          <div class="preview-cell">
+            <h3>原页面</h3>
             <div class="status small" id="beforeStatus"></div>
-            <iframe
-              id="beforeFrame"
-              class="after-frame"
-              src="about:blank"
-              loading="lazy"
-            ></iframe>
+            <iframe id="beforeFrame" class="after-frame" src="about:blank" loading="lazy"></iframe>
           </div>
-
-          <div id="afterCard" class="after-card" style="display: none">
-            <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
-              GEO 优化后示例页面（预览）
-            </h3>
+          <div class="preview-cell">
+            <h3>优化后页面</h3>
             <div class="status small" id="afterStatus"></div>
-            <iframe
-              id="afterFrame"
-              class="after-frame"
-              src="about:blank"
-              loading="lazy"
-            ></iframe>
+            <iframe id="afterFrame" class="after-frame" src="about:blank" loading="lazy"></iframe>
           </div>
         </div>
       </div>
@@ -243,11 +273,11 @@
       const pageStatus = $("pageStatus");
       const pageInfo = $("pageInfo");
       const schemaPre = $("schemaJson");
+      const llmAuditPre = $("llmAudit");
       const llmHtmlPre = $("llmHtml");
-      const beforeCard = $("beforeCard");
+      const previewSection = $("previewSection");
       const beforeFrame = $("beforeFrame");
       const beforeStatus = $("beforeStatus");
-      const afterCard = $("afterCard");
       const afterFrame = $("afterFrame");
       const afterStatus = $("afterStatus");
 
@@ -267,11 +297,14 @@
         auditList.innerHTML = "";
         pageInfo.innerHTML = "";
         schemaPre.textContent = "// 生成中...";
-        beforeCard.style.display = "none";
+        llmAuditPre.textContent =
+          "// 若已配置 DEEPSEEK_API_KEY，这里会显示基于 AI 审计提炼的要点";
+        previewSection.style.display = "none";
         beforeFrame.src = "about:blank";
+        beforeFrame.removeAttribute("srcdoc");
         beforeStatus.textContent = "";
-        afterCard.style.display = "none";
         afterFrame.src = "about:blank";
+        afterFrame.removeAttribute("srcdoc");
         afterStatus.textContent = "";
 
         try {
@@ -314,8 +347,8 @@
             pageStatus.classList.add("error");
           } else if (data.page) {
             if (url) {
-              beforeCard.style.display = "block";
-              beforeStatus.textContent = "这是当前输入 URL 的原始页面预览。";
+              previewSection.style.display = "block";
+              beforeStatus.textContent = "当前输入 URL 的原始页面。";
               beforeFrame.src = url;
             }
             const p = data.page;
@@ -354,6 +387,14 @@
               "// 未生成 Schema。请输入 URL，并确保页面可访问。";
           }
 
+          // 来自 AI 审计的关键信息（由大模型提炼）
+          if (data.llmAuditInsights) {
+            llmAuditPre.textContent = data.llmAuditInsights;
+          } else {
+            llmAuditPre.textContent =
+              "// 若已配置 DEEPSEEK_API_KEY，这里会显示基于 AI 审计提炼的要点";
+          }
+
           // LLM 优化后 HTML 源码预览
           if (data.llmOptimizedHtml) {
             llmHtmlPre.textContent = data.llmOptimizedHtml;
@@ -364,13 +405,19 @@
               "// 若已配置 DEEPSEEK_API_KEY，这里会显示优化后 HTML 源码";
           }
 
-          // Demo: 如果后端返回了 afterDemoUrl，则提供“优化后示例”预览
+          // 优化后预览：优先 afterDemoUrl（示例站），否则用 LLM 生成的 HTML
           if (data.afterDemoUrl) {
-            afterCard.style.display = "block";
-            afterStatus.textContent = "这是根据当前 URL 对应的 GEO 优化示例页面预览。";
+            afterStatus.textContent = "GEO 优化示例页面（静态）。";
             afterFrame.src = data.afterDemoUrl;
+            afterFrame.removeAttribute("srcdoc");
+          } else if (data.llmOptimizedHtml) {
+            afterStatus.textContent = "大模型生成的优化后页面（本次分析结果）。";
+            afterFrame.removeAttribute("src");
+            afterFrame.srcdoc = data.llmOptimizedHtml;
           } else {
-            afterCard.style.display = "none";
+            afterStatus.textContent = "无优化后示例；可配置 DEEPSEEK_API_KEY 或使用校长 Demo URL 查看。";
+            afterFrame.src = "about:blank";
+            afterFrame.removeAttribute("srcdoc");
           }
 
           globalStatus.textContent = "分析完成。";

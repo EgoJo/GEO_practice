@@ -100,6 +100,7 @@ app.post("/geo/analyze", async (req, res) => {
               },
             });
             result.llmOptimizedHtml = optimized.optimizedHtml;
+            result.llmAuditInsights = optimized.auditInsights;
           } catch (e: any) {
             result.llmOptimizeError = e?.message ?? String(e);
           }
