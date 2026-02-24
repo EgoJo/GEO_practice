@@ -10,6 +10,7 @@
     "dev": "tsx src/index.ts",
     "mcp": "tsx src/index.ts",
     "geo": "tsx src/cli.ts",
+    "web-demo": "tsx src/web-server.ts",
     "setup:browser": "npx playwright install chromium"
   },
   "keywords": ["geo", "mcp", "agent", "ai-search", "perplexity", "generative-engine-optimization"],
@@ -19,12 +20,16 @@
     "node": ">=18"
   },
   "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "playwright": "^1.49.0",
     "turndown": "^7.2.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
     "@types/node": "^22.0.0",
     "@types/turndown": "^5.0.6",
     "tsx": "^4.19.0",

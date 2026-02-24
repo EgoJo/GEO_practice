@@ -63,7 +63,15 @@ npm run geo
 
 按终端提示一步步输入：关键词 → 页面 URL → 是否生成 JSON-LD →（可选）是否发布到 WordPress。
 
-### 4. 作为 MCP Server 给 Cursor/Claude 使用
+### 4. Web 可视化 Demo
+
+```bash
+npm run web-demo
+```
+
+然后在浏览器打开 `http://localhost:3000`，即可看到单页 Web Demo：输入关键词和 URL，就能可视化地看到 AI 搜索审计结果、页面结构和推荐的 JSON-LD（Article）。
+
+### 5. 作为 MCP Server 给 Cursor/Claude 使用
 
 ```bash
 npm run mcp
@@ -73,7 +81,7 @@ npx tsx src/index.ts
 
 进程通过 **stdin/stdout** 与 MCP 客户端通信（JSON-RPC），供 Claude Desktop、Cursor 等调用。单独运行不会在终端打印内容，需要由 Cursor 等客户端发起调用才有返回。
 
-### 5. 在 Cursor 中配置 MCP
+### 6. 在 Cursor 中配置 MCP
 
 在 Cursor 的 MCP 配置（如 `~/.cursor/mcp.json` 或项目级配置）中增加：
 
@@ -108,7 +116,7 @@ npx tsx src/index.ts
 }
 ```
 
-### 6. GEO Agent 系统提示词
+### 7. GEO Agent 系统提示词
 
 在 Agent 宿主（如 Cursor 的 Custom Instructions 或 Claude 的系统提示）中可使用本仓库提供的 GEO 策略提示词，使模型按「审计 → 诊断 → 优化 → Schema → 发布」流程调用上述工具。提示词内容见：
 

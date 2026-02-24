@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>GEO Web Demo · 关键词 + 页面分析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          sans-serif;
+        color: #111827;
+        background: #f3f4f6;
+      }
+      body {
+        margin: 0;
+        padding: 1.5rem;
+      }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0.5rem;
+      }
+      .subtitle {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 0.75rem;
+        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1),
+          0 4px 6px -4px rgba(15, 23, 42, 0.1);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+      }
+      label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
+        font-size: 0.95rem;
+        box-sizing: border-box;
+      }
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.3);
+      }
+      .btn {
+        margin-top: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 9999px;
+        border: none;
+        background: #4f46e5;
+        color: #fff;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      .btn[disabled] {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 1.1fr 1.1fr 1.2fr;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      @media (max-width: 960px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      h2 {
+        font-size: 1.05rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+      }
+      .small {
+        font-size: 0.8rem;
+        color: #6b7280;
+      }
+      .list {
+        font-size: 0.85rem;
+        line-height: 1.5;
+        max-height: 420px;
+        overflow: auto;
+      }
+      .list-item {
+        padding: 0.4rem 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .heading-tag {
+        display: inline-block;
+        font-size: 0.75rem;
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 0.1rem 0.4rem;
+        border-radius: 9999px;
+        margin-right: 0.35rem;
+      }
+      pre {
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 0.75rem 0.9rem;
+        border-radius: 0.75rem;
+        font-size: 0.8rem;
+        max-height: 420px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .status {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+      }
+      .status.error {
+        color: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>GEO Web Demo · 关键词 + 页面分析</h1>
+      <p class="subtitle">
+        输入一个目标关键词和你的网站页面 URL，一键查看：
+        当前 AI 搜索引用了谁、你的页面长什么样、以及推荐的 Article
+        JSON-LD。
+      </p>
+
+      <div class="card">
+        <label for="keyword">目标关键词</label>
+        <input
+          id="keyword"
+          type="text"
+          placeholder="例如：卡迪根柯基 搞笑 故事"
+        />
+
+        <label for="url" style="margin-top: 0.6rem">要分析的页面 URL</label>
+        <input
+          id="url"
+          type="text"
+          placeholder="例如：https://你的站点/校长-主页"
+        />
+
+        <button id="run" class="btn">
+          <span>开始 GEO 分析</span>
+        </button>
+        <div id="globalStatus" class="status"></div>
+      </div>
+
+      <div class="layout">
+        <div class="card">
+          <h2>AI 搜索审计</h2>
+          <div id="auditStatus" class="status small"></div>
+          <div id="auditList" class="list"></div>
+        </div>
+
+        <div class="card">
+          <h2>你的页面结构</h2>
+          <div id="pageStatus" class="status small"></div>
+          <div id="pageInfo" class="list"></div>
+        </div>
+
+        <div class="card">
+          <h2>推荐 JSON-LD（Article）</h2>
+          <div class="status small">
+            可直接放入页面
+            <code>&lt;script type="application/ld+json"&gt;</code> 中。
+          </div>
+          <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const runBtn = $("run");
+      const keywordInput = $("keyword");
+      const urlInput = $("url");
+      const globalStatus = $("globalStatus");
+      const auditStatus = $("auditStatus");
+      const auditList = $("auditList");
+      const pageStatus = $("pageStatus");
+      const pageInfo = $("pageInfo");
+      const schemaPre = $("schemaJson");
+
+      async function analyze() {
+        const keyword = keywordInput.value.trim();
+        const url = urlInput.value.trim();
+
+        if (!keyword && !url) {
+          globalStatus.textContent = "请至少填写关键词或页面 URL 之一。";
+          return;
+        }
+
+        runBtn.disabled = true;
+        globalStatus.textContent = "正在调用 GEO 工具，请稍候...";
+        auditStatus.textContent = "";
+        pageStatus.textContent = "";
+        auditList.innerHTML = "";
+        pageInfo.innerHTML = "";
+        schemaPre.textContent = "// 生成中...";
+
+        try {
+          const res = await fetch("/geo/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ keyword, url }),
+          });
+          if (!res.ok) {
+            throw new Error("服务返回错误：" + res.status);
+          }
+          const data = await res.json();
+
+          // 审计结果
+          if (data.auditError) {
+            auditStatus.textContent = "审计失败：" + data.auditError;
+            auditStatus.classList.add("error");
+          } else if (data.audit && data.audit.results?.length) {
+            auditStatus.textContent =
+              "已返回 " + data.audit.results.length + " 条被引用来源。";
+            auditList.innerHTML = data.audit.results
+              .map(
+                (r, idx) => `
+              <div class="list-item">
+                <div><strong>${idx + 1}. ${r.title || "(无标题)"}</strong></div>
+                <div class="small">${r.url || ""}</div>
+                <div class="small">${r.snippet || ""}</div>
+              </div>`
+              )
+              .join("");
+          } else if (keyword) {
+            auditStatus.textContent = "没有返回审计结果。可能是 API Key 未配置或搜索无结果。";
+          } else {
+            auditStatus.textContent = "未输入关键词，已跳过审计。";
+          }
+
+          // 页面结构
+          if (data.pageError) {
+            pageStatus.textContent = "抓取失败：" + data.pageError;
+            pageStatus.classList.add("error");
+          } else if (data.page) {
+            const p = data.page;
+            const headingsHtml =
+              p.headings && p.headings.length
+                ? p.headings
+                    .map(
+                      (h) =>
+                        `<div><span class="heading-tag">H${h.level}</span>${h.text}</div>`
+                    )
+                    .join("")
+                : "<div class='small'>未找到标题结构。</div>";
+            pageInfo.innerHTML = `
+              <div class="list-item">
+                <div><strong>标题：</strong>${p.title || ""}</div>
+                <div class="small"><strong>描述：</strong>${
+                  p.metaDescription || "（无）"
+                }</div>
+              </div>
+              <div class="list-item">
+                <div><strong>标题结构：</strong></div>
+                ${headingsHtml}
+              </div>
+            `;
+          } else if (url) {
+            pageStatus.textContent = "没有返回页面信息。";
+          } else {
+            pageStatus.textContent = "未输入 URL，已跳过抓取。";
+          }
+
+          // Schema
+          if (data.schemaJson) {
+            schemaPre.textContent = data.schemaJson;
+          } else {
+            schemaPre.textContent =
+              "// 未生成 Schema。请输入 URL，并确保页面可访问。";
+          }
+
+          globalStatus.textContent = "分析完成。";
+        } catch (e) {
+          globalStatus.textContent = "请求失败：" + e.message;
+        } finally {
+          runBtn.disabled = false;
+        }
+      }
+
+      runBtn.addEventListener("click", analyze);
+    </script>
+  </body>
+  </html>
+
