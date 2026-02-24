@@ -41,6 +41,21 @@ export const env = {
   get BRAVE_API_KEY(): string | undefined {
     return getEnv("BRAVE_API_KEY");
   },
+
+  /** DeepSeek LLM API Key，用于内容优化 */
+  get DEEPSEEK_API_KEY(): string | undefined {
+    return getEnv("DEEPSEEK_API_KEY");
+  },
+
+  /** DeepSeek 基础 URL，可选，默认 https://api.deepseek.com/v1 */
+  get DEEPSEEK_BASE_URL(): string {
+    return getEnv("DEEPSEEK_BASE_URL") || "https://api.deepseek.com/v1";
+  },
+
+  /** DeepSeek 模型名，默认 deepseek-chat */
+  get DEEPSEEK_MODEL(): string {
+    return getEnv("DEEPSEEK_MODEL") || "deepseek-chat";
+  },
 } as const;
 
 export function requireTavily(): string {

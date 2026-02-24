@@ -73,7 +73,7 @@
       }
       .layout {
         display: grid;
-        grid-template-columns: 1.1fr 1.1fr 1.2fr;
+        grid-template-columns: 0.85fr 0.85fr 1.5fr;
         gap: 1rem;
         align-items: flex-start;
       }
@@ -194,6 +194,15 @@
           </div>
           <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
 
+          <h3 style="font-size: 0.95rem; margin: 0.8rem 0 0.3rem">
+            大模型生成的优化后 HTML（预览源码）
+          </h3>
+          <div class="status small">
+            若配置了 DEEPSEEK_API_KEY，这里会显示 DeepSeek 根据当前页面解析结果生成的完整 HTML
+            源码（只读预览）。
+          </div>
+          <pre id="llmHtml">// 若已配置 DEEPSEEK_API_KEY，这里会显示优化后 HTML 源码</pre>
+
           <div id="beforeCard" class="after-card" style="display: none">
             <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
               原页面预览
@@ -234,6 +243,7 @@
       const pageStatus = $("pageStatus");
       const pageInfo = $("pageInfo");
       const schemaPre = $("schemaJson");
+      const llmHtmlPre = $("llmHtml");
       const beforeCard = $("beforeCard");
       const beforeFrame = $("beforeFrame");
       const beforeStatus = $("beforeStatus");
@@ -342,6 +352,16 @@
           } else {
             schemaPre.textContent =
               "// 未生成 Schema。请输入 URL，并确保页面可访问。";
+          }
+
+          // LLM 优化后 HTML 源码预览
+          if (data.llmOptimizedHtml) {
+            llmHtmlPre.textContent = data.llmOptimizedHtml;
+          } else if (data.llmOptimizeError) {
+            llmHtmlPre.textContent = "// LLM 优化失败：" + data.llmOptimizeError;
+          } else {
+            llmHtmlPre.textContent =
+              "// 若已配置 DEEPSEEK_API_KEY，这里会显示优化后 HTML 源码";
           }
 
           // Demo: 如果后端返回了 afterDemoUrl，则提供“优化后示例”预览
