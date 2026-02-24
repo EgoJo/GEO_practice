@@ -129,6 +129,16 @@
       .status.error {
         color: #b91c1c;
       }
+      .after-card {
+        margin-top: 1rem;
+      }
+      .after-frame {
+        width: 100%;
+        height: 360px;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background: #f9fafb;
+      }
     </style>
   </head>
   <body>
@@ -181,6 +191,18 @@
             <code>&lt;script type="application/ld+json"&gt;</code> 中。
           </div>
           <pre id="schemaJson">// 这里会显示根据页面生成的 JSON-LD</pre>
+          <div id="afterCard" class="after-card" style="display: none">
+            <h3 style="font-size: 0.95rem; margin-bottom: 0.3rem">
+              GEO 优化后示例页面（预览）
+            </h3>
+            <div class="status small" id="afterStatus"></div>
+            <iframe
+              id="afterFrame"
+              class="after-frame"
+              src="about:blank"
+              loading="lazy"
+            ></iframe>
+          </div>
         </div>
       </div>
     </div>
@@ -196,6 +218,9 @@
       const pageStatus = $("pageStatus");
       const pageInfo = $("pageInfo");
       const schemaPre = $("schemaJson");
+      const afterCard = $("afterCard");
+      const afterFrame = $("afterFrame");
+      const afterStatus = $("afterStatus");
 
       async function analyze() {
         const keyword = keywordInput.value.trim();
@@ -213,6 +238,9 @@
         auditList.innerHTML = "";
         pageInfo.innerHTML = "";
         schemaPre.textContent = "// 生成中...";
+        afterCard.style.display = "none";
+        afterFrame.src = "about:blank";
+        afterStatus.textContent = "";
 
         try {
           const res = await fetch("/geo/analyze", {
@@ -287,6 +315,15 @@
           } else {
             schemaPre.textContent =
               "// 未生成 Schema。请输入 URL，并确保页面可访问。";
+          }
+
+          // Demo: 如果后端返回了 afterDemoUrl，则提供“优化后示例”预览
+          if (data.afterDemoUrl) {
+            afterCard.style.display = "block";
+            afterStatus.textContent = "这是根据当前 URL 对应的 GEO 优化示例页面预览。";
+            afterFrame.src = data.afterDemoUrl;
+          } else {
+            afterCard.style.display = "none";
           }
 
           globalStatus.textContent = "分析完成。";

@@ -59,6 +59,11 @@ app.post("/geo/analyze", async (req, res) => {
         });
 
         result.schemaJson = schema.jsonLd;
+
+        // 针对 Demo：如果是校长“优化前”站点，给出对应的“优化后”示例 URL
+        if (url.includes("corgi-site-before")) {
+          result.afterDemoUrl = url.replace("corgi-site-before", "corgi-site-geo");
+        }
       } catch (e: any) {
         result.pageError = e?.message ?? String(e);
       }
